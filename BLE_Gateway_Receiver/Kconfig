@@ -1,0 +1,57 @@
+
+menu "BASE_FILE"
+config BLE_ADD
+    string "BLE address"
+    default "DE:AD:BE:AF:BA:64"
+
+config BLE_RECEIVING_PAYLOAD_SIZE
+	int "BLE Receiving payload Size"
+	default 256
+
+config CLOUD_UPLOAD_PAYLOAD_SIZE
+	int "Cloud Upload payload Size"
+	default 1280
+
+config UPLOAD_INTERVAL
+	int "Cloud Upload interval in seconds"
+	default 10
+
+config GATEWAY_ID
+	int "Device Local ID"
+	default 100
+
+config MAX_FLASH_SIZE
+	int "Maximum Flash Size in bytes"
+	default 16777216	
+
+config FLASH_SECTOR_SIZE
+	int "Flash Sector Size in bytes"
+	default 4096
+
+config FLASH_WRITE_ADD
+	int "This Address stores last write_index, it is static address and should not be changed"
+	default 4096
+
+config FLASH_READ_ADD
+	int "This Address stores last read_index, it is static address and should not be changed"
+	default 4104
+
+config FLASH_DATA_START_ADD
+	int "Starting address in the flash for data storage, it is static address and should not be changed"
+	default 8192
+
+config AWS_IOT_SAMPLE_JSON_MESSAGE_SIZE_MAX
+	int "stores max json message length"
+	default 8192
+
+config AWS_IOT_BROKER_HOST_NAME_APP
+	bool "AWS IoT sever hostname provided by application run-time"
+
+config AWS_IOT_BROKER_HOST_NAME
+	string "AWS IoT server hostname"
+	depends on !AWS_IOT_BROKER_HOST_NAME_APP
+endmenu
+
+menu "Zephyr Kernel"
+source "Kconfig.zephyr"
+endmenu

@@ -1,0 +1,175 @@
+/* ==========================================================================
+ * 1. ALIASES & GPIO LEDS
+ * ========================================================================== */
+
+/ {
+    /* Map hardware nodes to simple names for use in C code (DT_ALIAS) */
+    aliases {
+        cloudled   = &cloud_led0;
+        gatewayled = &gateway_led0;
+        bleled     = &ble_led0;
+
+        /* REQUIRED FOR C CODE TO COMPILE: */
+        spi-flash0 = &mx25r64;
+        led0       = &cloud_led0;
+        led1       = &gateway_led0;
+        led2       = &ble_led0;
+    };
+
+    /* Define standalone GPIO pins used for indicator LEDs */
+    leds {
+        compatible = "gpio-leds";
+
+        cloud_led0: led_0 {
+            gpios = <&gpio0 30 GPIO_ACTIVE_HIGH>;
+        };
+        gateway_led0: led_1 {
+            gpios = <&gpio0 31 GPIO_ACTIVE_HIGH>;
+        };
+        ble_led0: led_2 {
+            gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+        };
+    };
+
+
+};
+/* ==========================================================================
+ * 2. HARDWARE SUBSYSTEMS
+ * ========================================================================== */
+
+/* UART0 - Console Output */
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart0_default>;
+    pinctrl-1 = <&uart0_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+/* UART2 - EC200U Modem AT Commands */
+&uart2 {
+    status = "okay";
+    current-speed = <115200>;
+    pinctrl-0 = <&uart2_default>;
+    pinctrl-1 = <&uart2_sleep>;
+    pinctrl-names = "default", "sleep";
+};
+
+/* QSPI - MX25R6435F External Flash (U2) */
+&qspi {
+    status = "okay";
+    pinctrl-0 = <&qspi_default>;
+    pinctrl-1 = <&qspi_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    mx25r64: mx25r6435f@0 {
+        compatible = "nordic,qspi-nor";
+        reg = <0>;
+        writeoc = "pp4io";
+        readoc = "read4io";
+        sck-frequency = <8000000>;
+        jedec-id = [c2 28 17];
+        size = <67108864>; /* 64 Mbit */
+    };
+};
+
+/* SPI3 - MicroSD Card (J15) */
+&spi3 {
+    status = "okay";
+    pinctrl-0 = <&spi3_default>;
+    pinctrl-1 = <&spi3_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    cs-gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
+
+    sdhc0: sdhc@0 {
+        compatible = "zephyr,sdhc-spi-slot";
+        reg = <0>;
+        status = "okay";
+        spi-max-frequency = <8000000>;
+
+        mmc {
+            compatible = "zephyr,sdmmc-disk";
+            disk-name = "SD";
+            status = "okay";
+        };
+    };
+};
+
+/* ==========================================================================
+ * 3. PIN CONTROL DEFINITIONS (PINMUX)
+ * ========================================================================== */
+
+&pinctrl {
+
+    /* --- UART0 (Console) --- */
+    uart0_default: uart0_default {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 0, 20)>,
+                    <NRF_PSEL(UART_RX, 0, 22)>;
+        };
+    };
+    uart0_sleep: uart0_sleep {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 0, 20)>,
+                    <NRF_PSEL(UART_RX, 0, 22)>;
+            low-power-enable;
+        };
+    };
+
+    /* --- UART2 (Modem) --- */
+    uart2_default: uart2_default {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 1, 10)>,
+                    <NRF_PSEL(UART_RX, 1, 11)>;
+        };
+    };
+    uart2_sleep: uart2_sleep {
+        group1 {
+            psels = <NRF_PSEL(UART_TX, 1, 10)>,
+                    <NRF_PSEL(UART_RX, 1, 11)>;
+            low-power-enable;
+        };
+    };
+
+    /* --- QSPI (MX25R6435F) --- */
+    qspi_default: qspi_default {
+        group1 {
+            psels = <NRF_PSEL(QSPI_SCK, 0, 17)>,
+                    <NRF_PSEL(QSPI_CSN, 0, 18)>,
+                    <NRF_PSEL(QSPI_IO0, 0, 13)>,
+                    <NRF_PSEL(QSPI_IO1, 0, 14)>,
+                    <NRF_PSEL(QSPI_IO2, 0, 15)>,
+                    <NRF_PSEL(QSPI_IO3, 0, 16)>;
+        };
+    };
+    qspi_sleep: qspi_sleep {
+        group1 {
+            psels = <NRF_PSEL(QSPI_SCK, 0, 17)>,
+                    <NRF_PSEL(QSPI_CSN, 0, 18)>,
+                    <NRF_PSEL(QSPI_IO0, 0, 13)>,
+                    <NRF_PSEL(QSPI_IO1, 0, 14)>,
+                    <NRF_PSEL(QSPI_IO2, 0, 15)>,
+                    <NRF_PSEL(QSPI_IO3, 0, 16)>;
+            low-power-enable;
+        };
+    };
+
+    /* --- SPI3 (SD Card) --- */
+    spi3_default: spi3_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 5)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 4)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 27)>;
+        };
+    };
+    spi3_sleep: spi3_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 5)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 4)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 27)>;
+            low-power-enable;
+        };
+    };
+
+};
